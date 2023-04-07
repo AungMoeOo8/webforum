@@ -11,6 +11,27 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/",
+        missing: [
+          {
+            type: "cookie",
+            key: "session",
+          },
+        ],
+        permanent: false,
+        destination: "/sign-in",
+      },
+      {
+        source: "/sign-in",
+        has: [{ type: "cookie", key: "session" }],
+        permanent: false,
+        destination: "/",
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

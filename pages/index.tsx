@@ -1,72 +1,31 @@
 import Head from "next/head";
 import Image from "next/image";
-import { Poppins } from "next/font/google";
-import { IoSearch, IoHeartOutline, IoDiamondOutline } from "react-icons/io5";
-import styles from "../styles/Home.module.css";
-import Link from "next/link";
-import React from "react";
 
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
+import React, { useState } from "react";
+import { GetServerSideProps } from "next";
+import { NextPageWithLayout } from "./_app";
+import AppLayout from "@/appLayout";
 
-function Navbar() {
+export const getServerSideProps: GetServerSideProps = async () => {
+  const result = (await fetch("http://localhost:5000/api/posts").then((res) =>
+    res.json()
+  )) as { data: string[] };
+
+  return {
+    props: {
+      data: result.data,
+    },
+  };
+};
+
+const SecondSection: React.FC<{ data: string[] }> = ({ data }) => {
+  const [postData, setPostData] = useState(data);
   return (
-    <header
-      className={`${poppins.className} container mx-auto px-4 py-6 flex justify-between sticky top-0 bg-white z-10`}
-    >
-      <Link href={"/"} passHref>
-        <h1 style={{ fontSize: "2rem" }} className=" font-medium">
-          WebForum
-        </h1>
-      </Link>
-
-      <nav className="flex gap-x-5">
-        <button>
-          <IoSearch size={24} color={"#4B4D56"} />
-        </button>
-        <div className=" w-12 h-12 rounded-full overflow-hidden">
-          <Image
-            alt="profile pic"
-            width={48}
-            height={48}
-            src={
-              "https://cdna.artstation.com/p/assets/images/images/008/900/210/large/ina-wong-sindragosacrop1.jpg?1515997173"
-            }
-          />
-        </div>
-      </nav>
-    </header>
-  );
-}
-
-function FirstSection() {
-  return (
-    <div className="relative basis-[280px] shrink-0">
-      <div className="sticky top-[126px] border py-4 rounded-2xl">
-        {["Profile", "Notifications", "Settings", "Logout"].map(
-          (item, index) => (
-            <div
-              key={index}
-              className=" font-medium text-lg text-center py-2 transition-colors hover:bg-slate-50"
-            >
-              {item}
-            </div>
-          )
-        )}
-      </div>
-    </div>
-  );
-}
-
-function SecondSection() {
-  return (
-    <div className="flex-auto flex flex-col gap-y-6">
-      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((item, index) => (
+    <section className="flex-auto flex flex-col gap-y-6">
+      {postData.map((item, index) => (
         <div
           key={index}
-          className=" p-6 flex flex-col gap-y-4 border rounded-2xl"
+          className=" p-6 flex flex-col gap-y-4 border rounded-2xl shadow-sm"
         >
           <div className="flex gap-x-4">
             <div className=" w-12 h-12 rounded-full overflow-hidden">
@@ -84,13 +43,7 @@ function SecondSection() {
               <p className="text-xs text-[#A5A5A5]">TaukToMaYa at MyWork</p>
             </div>
           </div>
-          <div className="font-medium">
-            What follows within the Fundamentals section of this documentation
-            is a tour of the most important aspects of React Navigation. It
-            should cover enough for you to know how to build your typical small
-            mobile application, and give you the background that you need to
-            dive deeper into the more advanced parts of React Navigation.
-          </div>
+          <div className="font-medium">{item}</div>
           <div className="flex gap-x-20">
             <button className="font-medium">Like</button>
             <button className="font-medium">comment</button>
@@ -98,49 +51,37 @@ function SecondSection() {
           </div>
         </div>
       ))}
-      <div className="font-bold text-2xl text-center py-4 mb-6">No More!</div>
-    </div>
-  );
-}
-
-function ThirdSection() {
-  return (
-    <div className="relative basis-[420px] shrink-0">
-      <div className="sticky top-[126px] border py-4 rounded-2xl">
-        <div className="h-full flex justify-center items-center">
-          <p className="font-medium flex items-center gap-x-2">
-            Nothing to show <IoDiamondOutline />
-          </p>
-        </div>
+      <div
+        className="font-bold text-2xl text-center py-4 mb-6"
+        onClick={() => setPostData((current) => [...current, "Another One!"])}
+      >
+        No More!
       </div>
-    </div>
+    </section>
   );
-}
+};
 
-const MemoNavbar = React.memo(() => <Navbar />);
-const MemoFirstSection = React.memo(() => <FirstSection />);
-const MemoSecondSection = React.memo(() => <SecondSection />);
-const MemoThirdSection = React.memo(() => <ThirdSection />);
+const MemoSecondSection = React.memo(({ data }: { data: string[] }) => (
+  <SecondSection data={data} />
+));
 
-export default function Home() {
+const Home: NextPageWithLayout<{ data: string[] }> = ({ data }) => {
   return (
     <>
       <Head>
-        <title>Create Next App</title>
+        <title>WebForum</title>
         <meta name="description" content="Generated by create next app" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div>
-        <MemoNavbar />
-        <main className=" mt-[30px]">
-          <div className="relative container mx-auto px-4 flex gap-x-4">
-            <MemoFirstSection />
-            <MemoSecondSection />
-            <MemoThirdSection />
-          </div>
-        </main>
-      </div>
+
+      <MemoSecondSection data={data} />
     </>
   );
-}
+};
+
+export default Home;
+
+Home.getLayout = function getLayout(page: React.ReactElement) {
+  return <AppLayout>{page}</AppLayout>;
+};

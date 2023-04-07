@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .sidebarBtn {
+    @apply font-medium text-lg text-center py-2 transition-colors hover:bg-slate-50;
+  }
+}
